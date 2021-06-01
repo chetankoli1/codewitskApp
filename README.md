@@ -1,5 +1,5 @@
-# codewitskApp
-## Some basic Git commands are:
+# SMART SALON APP DOCUMENTATION
+## User App
 ```
 git status
 git add
