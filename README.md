@@ -60,19 +60,23 @@ manger are see the request and accepting or rejecting as per avalability.
 2.Your can categiry using the plus icon click this icon to add categiry
         ***male and female option selection is more importent***
 
+3.see the three dots and click here to showing all item lists so you can click the every item
+and see this item related content and use all admin services like.
+    EDIT,DELET,ACCEPT,REJECT,CALL,UPDATE DATA,UPDATE ADDRESS ETC.
+
 ```
-### intro screen Dateils In Application
+### see some admin images
 <img src = "src/images/adminsecond.png" >
 
 ###### intro screen :
 ```
-1.you can seen open app see all appointments are showing.per appoint are perfoming some task
-    a) accept request
-    b) reject request
-    c) delet request
-    d) call user or custumer
+1.you can seen first images for female categories you can edit categiry and delet category
+and so add categiry to user plus button
+and apply offere also
 
-2.Your can categiry using the plus icon click this icon to add categiry
-        ***male and female option selection is more importent***
+2.second image are showing add offere add offere
 
 ```
+## NOTES
+### !please follow this step to get perfection for this app You can see any male and female option dialog to choose correct option.
+### click any button make some Paitions;
