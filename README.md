@@ -1,7 +1,7 @@
 # SMART SALON APP DOCUMENTATION
 ## User App
 ### How to Register and Login In Application
-<img src = "src/images/first.jpg" >
+<img src = "src/images/first.png" >
 
 ###### choose your self:
 ```
