@@ -32,7 +32,7 @@ manger are see the request and accepting or rejecting as per avalability.
 
 ### Side Menu Intro
 
-<img src = "src/images/third.png>
+<img src = "src/images/third.png">
 
 ###### side menu opetions
 ```
