@@ -46,3 +46,33 @@ manger are see the request and accepting or rejecting as per avalability.
 ```
 
 ## Admin App
+### intro screen Dateils In Application
+<img src = "src/images/adminfirst.png" >
+
+###### intro screen :
+```
+1.you can seen open app see all appointments are showing.per appoint are perfoming some task
+    a) accept request
+    b) reject request
+    c) delet request
+    d) call user or custumer
+
+2.Your can categiry using the plus icon click this icon to add categiry
+        ***male and female option selection is more importent***
+
+```
+### intro screen Dateils In Application
+<img src = "src/images/adminsecond.png" >
+
+###### intro screen :
+```
+1.you can seen open app see all appointments are showing.per appoint are perfoming some task
+    a) accept request
+    b) reject request
+    c) delet request
+    d) call user or custumer
+
+2.Your can categiry using the plus icon click this icon to add categiry
+        ***male and female option selection is more importent***
+
+```
