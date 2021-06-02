@@ -30,3 +30,18 @@ manger are see the request and accepting or rejecting as per avalability.
 
 ```
 
+### Side Menu Intro
+
+<img src = "src/images/third.png>
+
+###### side menu opetions
+```
+
+ 1.you can click service and see this content selected content
+ 2.you can logout using side bar
+ 3.your are login using guest or skip opetion and you are login your all info to logout the guest
+ and login and register your original account
+
+```
+
+## Admin App
