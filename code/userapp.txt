@@ -1,0 +1,1013 @@
+first screen
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/splashback"
+    tools:context=".SplashScreenActivity">
+
+    <ImageView
+        android:id="@+id/imgLogo"
+        android:layout_width="178dp"
+        android:layout_height="155dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="150dp"
+        android:src="@drawable/logotype" />
+
+    <TextView
+        android:id="@+id/shopeName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imgLogo"
+        android:layout_marginTop="42dp"
+        android:gravity="center"
+        android:text="The Look"
+        android:textAllCaps="true"
+        android:textColor="@color/black"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:typeface="serif" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="89dp"
+        android:layout_height="77dp"
+        android:layout_below="@+id/shopeName"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="159dp"
+        android:layout_marginLeft="159dp"
+        android:layout_marginTop="143dp"
+        android:layout_marginEnd="163dp"
+        android:layout_marginRight="163dp"
+        android:layout_marginBottom="229dp" />
+
+</RelativeLayout>
+
+FirstScreen java code:
+
+package com.codewithsk.barber;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
+
+public class SplashScreenActivity extends AppCompatActivity {
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        SystemChanges.stustusbarColor(this);
+
+        if (!isInternetConnected(this))
+        {
+            showCustemDialog();
+        }
+        else {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(new Intent(SplashScreenActivity.this,LoginActivity.class));
+                    finish();
+                }
+            },3000);
+        }
+    }
+    private boolean isInternetConnected(SplashScreenActivity splashScreenActivity) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) splashScreenActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifiConn = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo mobileConn = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if ((wifiConn != null && wifiConn.isConnected()) || (mobileConn != null && mobileConn.isConnected())){
+            return true;
+        }else {
+            return false;
+        }
+    }
+    private void showCustemDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(SplashScreenActivity.this);
+        builder.setMessage("Please Connect Your Internet and try again!!!")
+                .setCancelable(false).setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+                System.exit(0);
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+}
+
+login screen:
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/splashback"
+    android:layout_height="match_parent"
+    android:padding="8dp"
+    tools:context=".LoginActivity">
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/logotype"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="200dp"
+        android:id="@+id/logotype"/>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:hint="Mobile No"
+        android:layout_below="@id/logotype"
+        android:id="@+id/layout1">
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editMbNo"
+            android:maxLength="10"
+            android:inputType="number"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:id="@+id/btnNextLogin"
+        android:layout_marginTop="8dp"
+        android:text="Login"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/layout1"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#000"
+        android:layout_marginTop="10dp"
+        android:id="@+id/v1"
+        android:layout_below="@+id/btnNextLogin"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="5dp"
+        android:text="New User Registration Here?"
+        android:id="@+id/goToRegistration"
+        android:layout_below="@id/v1"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="10dp"
+        android:background="#000"
+        android:id="@+id/v2"
+        android:layout_below="@+id/goToRegistration"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Skip Steps"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:id="@+id/goToSkip"
+        android:layout_below="@id/v2"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_marginTop="10dp"
+        android:background="#000"
+        android:id="@+id/v3"
+        android:layout_below="@+id/goToSkip"
+        />
+
+
+</RelativeLayout>
+
+login screen java code
+package com.codewithsk.barber;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
+
+import com.codewithsk.barber.databinding.ActivityLoginBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import static com.codewithsk.barber.SessonManger.SAGAR;
+import static com.codewithsk.barber.SessonManger.SESSON_NAME;
+
+
+public class LoginActivity extends AppCompatActivity {
+    ActivityLoginBinding binding;
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityLoginBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        binding.btnNextLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String number = binding.editMbNo.getText().toString().trim();
+                if (number.isEmpty()){
+                    Toast.makeText(LoginActivity.this, "Enter Mobile No", Toast.LENGTH_SHORT).show();
+                    return;
+                }else {
+                    Intent intent = new Intent(LoginActivity.this, SecondOtpActivity.class);
+                    intent.putExtra("MobileNo", number);
+                    startActivity(intent);
+                }
+            }
+        });
+        SystemChanges.stustusbarColor(this);
+
+        binding.goToRegistration.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(LoginActivity.this,RegistrationActivity.class));
+                finish();
+            }
+        });
+        binding.goToSkip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SessonManger.startSesson(LoginActivity.this,SAGAR);
+                startActivity(new Intent(LoginActivity.this,HomeActivity.class));
+                finish();
+            }
+        });
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        SharedPreferences sharedPreferences = getSharedPreferences(SESSON_NAME, Context.MODE_PRIVATE);
+        String checkValue = sharedPreferences.getString("START",null);
+        if (checkValue != null || user != null){
+            startActivity(new Intent(LoginActivity.this,HomeActivity.class));
+            finish();
+        }
+    }
+}
+
+registration xml file
+
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/splashback"
+    android:padding="10dp"
+    android:layout_height="match_parent"
+    tools:context=".RegistrationActivity">
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/logotype"
+        android:layout_marginTop="100dp"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/logotype1"/>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/logotype1"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:hint="Full Name"
+        android:id="@+id/reg_layout1">
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:id="@+id/regname"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:hint="Mobile No"
+        android:layout_below="@id/reg_layout1"
+        android:id="@+id/reg_layout2">
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/regnumber"
+            android:maxLength="10"
+            android:inputType="number"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:hint="Age"
+        android:layout_below="@id/reg_layout2"
+        android:id="@+id/reg_layout3">
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/regage"
+            android:maxLength="3"
+            android:inputType="number"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:hint="Pin Code Or Area Code"
+        android:layout_below="@id/reg_layout3"
+        android:id="@+id/reg_layout4">
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/regpincode"
+            android:maxLength="10"
+            android:inputType="number"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/reg_layout4"
+        android:gravity="center"
+        android:id="@+id/layout5"
+        android:weightSum="1"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="#000"
+            android:text="Select Gender: "/>
+        <RadioGroup
+            android:id="@+id/radioSex"
+            android:layout_weight=".5"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <RadioButton
+                android:id="@+id/radioMale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="male"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/radioFemale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="female" />
+
+        </RadioGroup>
+    </LinearLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:text="Register"
+        android:id="@+id/btnUserRegister"
+        android:layout_below="@+id/layout5"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp"/>
+</RelativeLayout>
+
+register java file
+
+package com.codewithsk.barber;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.widget.RadioButton;
+import android.widget.Toast;
+
+import com.codewithsk.barber.databinding.ActivityRegistrationBinding;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+public class RegistrationActivity extends AppCompatActivity {
+    ActivityRegistrationBinding binding;
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityRegistrationBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        SystemChanges.stustusbarColor(this);
+        binding.btnUserRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                register();
+            }
+        });
+
+
+    }
+    public void register(){
+        String name = binding.regname.getText().toString().trim();
+        String mobile_no = binding.regnumber.getText().toString().trim();
+        String age = binding.regage.getText().toString().trim();
+        String pincode = binding.regpincode.getText().toString().trim();
+        String gender = "";
+        if (name.isEmpty() || mobile_no.isEmpty() || age.isEmpty() || pincode.isEmpty()){
+            Toast.makeText(this, "Some Feilds are empty!! please feel all deatails!", Toast.LENGTH_LONG).show();
+            return;
+        }else{
+            if (binding.radioMale.isChecked()){
+                gender = "Male";
+            }
+            if (binding.radioFemale.isChecked()){
+                gender = "Female";
+            }
+            Intent i = new Intent(RegistrationActivity.this,OtpActivity.class);
+            i.putExtra("name",name);
+            i.putExtra("phone",mobile_no);
+            i.putExtra("age",age);
+            i.putExtra("pincode",pincode);
+            i.putExtra("gender",gender);
+            startActivity(i);
+        }
+    }
+}
+
+otp code:
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/splashback"
+    tools:context=".SecondOtpActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/logotype"
+        android:layout_marginTop="100dp"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/logotype3"/>
+    <EditText
+        android:id="@+id/otp_view1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:hint="Enter OTP"
+        android:gravity="center"
+        android:maxLength="6"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/logotype3"
+        android:layout_centerHorizontal="true"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="finish"
+        android:id="@+id/btnFinish1"
+        android:layout_below="@+id/otp_view1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"/>
+
+    </RelativeLayout>
+
+    <include layout="@layout/loading"
+        android:visibility="gone"
+        android:id="@+id/laodingLayouts"/>
+</RelativeLayout>
+
+otp java code:
+package com.codewithsk.barber;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.health.PackageHealthStats;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
+import com.codewithsk.barber.databinding.ActivityOtpBinding;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthOptions;
+import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.concurrent.TimeUnit;
+
+import static com.codewithsk.barber.SessonManger.FIREBASE_USER;
+
+public class OtpActivity extends AppCompatActivity {
+
+    private ActivityOtpBinding binding;
+    private String mobile;
+    private String verificationId;
+    private FirebaseAuth mAuth;
+    private FirebaseDatabase fDatabase;
+    private DatabaseReference dRef;
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityOtpBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        mobile = getIntent().getStringExtra("phone");
+        fDatabase = FirebaseDatabase.getInstance();
+        dRef = fDatabase.getReference().child("Users");
+        SystemChanges.stustusbarColor(this);
+        mAuth = FirebaseAuth.getInstance();
+        PhoneAuthOptions options =
+                PhoneAuthOptions.newBuilder(mAuth)
+                        .setPhoneNumber("+91"+mobile)
+                        .setTimeout(60L, TimeUnit.SECONDS)
+                        .setActivity(OtpActivity.this)
+                        .setCallbacks(mCallback)
+                        .build();
+        PhoneAuthProvider.verifyPhoneNumber(options);
+        binding.btnFinish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (binding.otpView.getText().toString().isEmpty()){
+                    Toast.makeText(OtpActivity.this, "Please Enter OTP", Toast.LENGTH_SHORT).show();
+                    return;
+                }else {
+                    verifyCode(binding.otpView.getText().toString());
+                }
+            }
+        });
+
+    }
+   PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallback = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+       @Override
+       public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
+           String code = phoneAuthCredential.getSmsCode();
+           if (code != null){
+               binding.otpView.setText(code);
+               verifyCode(code);
+           }
+       }
+
+       @Override
+       public void onVerificationFailed(@NonNull FirebaseException e) {
+           binding.otpLoadingLayout.laodingLayout.setVisibility(View.GONE);
+           Toast.makeText(OtpActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+       }
+
+       @Override
+       public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+           super.onCodeSent(s, forceResendingToken);
+           verificationId = s;
+       }
+   };
+    private void verifyCode(String code) {
+        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
+        signInWithPhoneAuthCredential(credential);
+        binding.otpLoadingLayout.laodingLayout.setVisibility(View.VISIBLE);
+    }
+    private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            binding.otpLoadingLayout.laodingLayout.setVisibility(View.GONE);
+                            String name = getIntent().getStringExtra("name");
+                            String age = getIntent().getStringExtra("age");
+                            String mobile_no = getIntent().getStringExtra("phone");
+                            String pincode = getIntent().getStringExtra("pincode");
+                            String gender = getIntent().getStringExtra("gender");
+                            User user = new User();
+                            user.setName(name);
+                            user.setAge(age);
+                            user.setMobile_no(mAuth.getCurrentUser().getPhoneNumber());
+                            user.setPincode(pincode);
+                            user.setGender(gender);
+                            user.setUid(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            dRef.child(mAuth.getCurrentUser().getUid()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        binding.otpLoadingLayout.laodingLayout.setVisibility(View.GONE);
+                                        SessonManger.startSesson(OtpActivity.this,FIREBASE_USER);
+                                        Toast.makeText(OtpActivity.this, "User Added!!!", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(OtpActivity.this, HomeActivity.class);
+                                        startActivity(intent);
+                                    } else {
+                                        binding.otpLoadingLayout.laodingLayout.setVisibility(View.GONE);
+                                        Toast.makeText(OtpActivity.this, "data: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                            Toast.makeText(OtpActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(OtpActivity.this,HomeActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            binding.otpLoadingLayout.laodingLayout.setVisibility(View.GONE);
+                            Toast.makeText(OtpActivity.this, "SignmIn: "+task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+}
+
+Home Screen Code:
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/drawer_layout"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
+
+    <include
+        layout= "@layout/app_bar_main"
+        android:layout_width= "match_parent"
+        android:layout_height= "match_parent" />
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity= "start"
+        android:fitsSystemWindows="true"
+        app:menu="@menu/nav_menu"
+        app:headerLayout="@layout/nav_header"
+        />
+
+</androidx.drawerlayout.widget.DrawerLayout>
+
+nav menu
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android= "http://schemas.android.com/apk/res/android"
+    xmlns:tools= "http://schemas.android.com/tools"
+    tools:showIn= "navigation_view">
+    <group android:checkableBehavior= "single" >
+        <item
+            android:id= "@+id/nav_male"
+            android:title= "@string/male_services" />
+
+        <item
+            android:id= "@+id/nav_female"
+            android:title= "@string/female_services" />
+
+        <item
+            android:id="@+id/nav_ytchannel"
+            android:title="@string/my_bookings"/>
+        <item
+            android:id= "@+id/nav_profile"
+            android:title= "@string/my_profile" />
+        <item
+            android:id= "@+id/nav_about"
+            android:title= "@string/contact_us" />
+        <item
+            android:id= "@+id/nav_logout"
+            android:title= "@string/logout" />
+    </group>
+
+</menu>
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/nav_header_height"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/splashback"
+    android:gravity="bottom"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    tools:viewBindingIgnore="true"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="welcome to barbar apk"
+        android:textColor="@color/black"
+        android:textSize="15dp"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:text="Your Have Guest!please Login"
+        android:id="@+id/UserNameTextUsers"
+        android:textColor="@color/black"
+        android:textStyle="bold"/>
+</LinearLayout>
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:elevation="6dp"
+            android:id="@+id/toolbars"
+            android:background="@color/splashback">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_baseline_menu_24"
+                android:id="@+id/nav_open"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:id="@+id/toolbarTitle"
+                android:textColor="@color/black"
+                android:layout_marginLeft="20dp"/>
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+    <include layout= "@layout/containt_main" />
+    <include layout="@layout/loading" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/container"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".HomeActivity"
+    tools:showIn="@layout/app_bar_main">
+
+</FrameLayout>
+
+Home Screen java code
+package com.codewithsk.barber;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.codewithsk.barber.databinding.ActivityHomeBinding;
+import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import static com.codewithsk.barber.SessonManger.FIREBASE_USER;
+import static com.codewithsk.barber.SessonManger.SAGAR;
+import static com.codewithsk.barber.SessonManger.SESSON_NAME;
+import static com.codewithsk.barber.SessonManger.START;
+
+public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    ActivityHomeBinding binding;
+    Toolbar toolbar;
+    TextView title;
+    ImageButton open;
+    private RelativeLayout newLoadingLayout;
+    SharedPreferences sharedPreferences;
+    @SuppressLint("SetTextI18n")
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityHomeBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        newLoadingLayout = findViewById(R.id.laoding_layout);
+
+        sharedPreferences = getSharedPreferences(SESSON_NAME, Context.MODE_PRIVATE);
+
+        toolbar  = findViewById(R.id.toolbars);
+        title = findViewById(R.id.toolbarTitle);
+        isCheckGenderMaleOrFemale();
+        if (sharedPreferences.getString(START,"").equals(SAGAR)){
+            Toast.makeText(this, "No Any User Found", Toast.LENGTH_SHORT).show();
+        }else {
+          DatabaseReference  dRef = FirebaseDatabase.getInstance().getReference("Users")
+                  .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+            dRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        TextView username = (TextView) findViewById(R.id.UserNameTextUsers);
+                        String value = snapshot.getValue(User.class).getName();
+                        username.setText("Mr. " + value);
+                    } else {
+                        Toast.makeText(HomeActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(HomeActivity.this, "nav: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        SystemChanges.stustusbarColor(this);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this,binding.drawerLayout,R.string.navigation_drawer_open,R.string.navigation_drawer_close
+        );
+        open = findViewById(R.id.nav_open);
+        open.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                binding.drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        binding.drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+        binding.navView.setNavigationItemSelectedListener(this);
+    }
+
+    @SuppressLint({"NonConstantResourceId", "SetTextI18n"})
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        Fragment fragment = null;
+        switch (id){
+            case R.id.nav_male:
+                fragment = new MaleServiceFragment();
+                title.setText(R.string.male_services);
+                break;
+            case R.id.nav_female:
+                fragment = new FemaleServiceFragment();
+                title.setText(R.string.female_services);
+                break;
+            case R.id.nav_ytchannel:
+                String valuess = sharedPreferences.getString(START,"");
+                if (valuess.equals(SAGAR)){
+                    Toast.makeText(this, "First Login Here!!", Toast.LENGTH_SHORT).show();
+                }else {
+                    fragment = new MyAppointmentsFragment();
+                    title.setText(R.string.my_bookings);
+                }
+                break;
+            case R.id.nav_profile:
+                String pValue = sharedPreferences.getString(START,"");
+                if (pValue.equals(SAGAR)){
+                    Toast.makeText(this, "First Login Here!!", Toast.LENGTH_SHORT).show();
+                }else {
+                    fragment = new ProfileFragment();
+                    title.setText(R.string.my_profile);
+                }
+                break;
+            case R.id.nav_about:
+                fragment = new AboutUsFragment();
+                title.setText("Contact Us");
+                break;
+            case R.id.nav_logout:
+                SessonManger.removeSesson(HomeActivity.this, START);
+                startActivity(new Intent(HomeActivity.this, LoginActivity.class));
+                break;
+            default:
+                fragment = new MaleServiceFragment();
+                title.setText(R.string.male_services);
+                break;
+
+        }
+          if (fragment != null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.container,fragment).commit();
+        }
+        binding.drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+    public void isCheckGenderMaleOrFemale() {
+        String checkGuest = sharedPreferences.getString(START, "");
+        if (checkGuest.equals(FIREBASE_USER)) {
+            DatabaseReference checkGender = FirebaseDatabase.getInstance().getReference("Users")
+                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+            checkGender.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String genderCheck = snapshot.getValue(User.class).getGender();
+                        if (genderCheck.equals("Male")) {
+                            newLoadingLayout.setVisibility(View.GONE);
+                            title.setText(R.string.male_services);
+                            getSupportFragmentManager().beginTransaction().replace(R.id.container, new MaleServiceFragment()).commit();
+                            FirebaseMessaging.getInstance().subscribeToTopic("Male");
+                            FirebaseMessaging.getInstance().unsubscribeFromTopic("Female");
+                        } else {
+                            newLoadingLayout.setVisibility(View.GONE);
+                            title.setText(R.string.female_services);
+                            getSupportFragmentManager().beginTransaction().replace(R.id.container, new FemaleServiceFragment()).commit();
+                            FirebaseMessaging.getInstance().subscribeToTopic("Female");
+                            FirebaseMessaging.getInstance().unsubscribeFromTopic("Male");
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    newLoadingLayout.setVisibility(View.GONE);
+                    Toast.makeText(HomeActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            newLoadingLayout.setVisibility(View.GONE);
+            title.setText(R.string.male_services);
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, new MaleServiceFragment()).commit();
+        }
+    }
+}
