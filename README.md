@@ -6,10 +6,12 @@
 ### How to booking Appointment
 
 <img src = "src/images/test.jpg" width = "700">
-======
-1.add some image
-2.user added images
-3.use user authication 
-4.follow some points
-    1.he
-    2.hellow
+
+###### choose your self:
+```
+1. first register for best experiance
+2. your are already registrated then login this app
+3. you can choosed skip to not visible full work
+
+```
+
