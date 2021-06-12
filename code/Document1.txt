@@ -1,0 +1,1675 @@
+All Application Scture code:- 
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.codewithsk.barberadmin">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/adminicon"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.BarberAdmin">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+This is MainScreen
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/containerLoader"
+    tools:context=".MainActivity">
+
+
+</FrameLayout>
+This is MainScreen java code:
+package com.codewithsk.barberadmin;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.net.Uri;
+import android.opengl.ETC1;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.UUID;
+
+public class MainActivity extends AppCompatActivity {
+    private Uri filePath;
+    private final int PICK_IMAGE_REQUEST = 22;
+    private ImageView imgLoader;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        getSupportFragmentManager().beginTransaction().replace(R.id.containerLoader,new AllAppointmentFragment()).commit();
+        getSupportActionBar().setTitle("All Appointments");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        switch (id){
+            case R.id.AllAppint:
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerLoader,new AllAppointmentFragment()).commit();
+                getSupportActionBar().setTitle("All Appointments");
+                break;
+            case R.id.allusers:
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerLoader,new AllUsersFragment()).commit();
+                getSupportActionBar().setTitle("All Users");
+                break;
+            case R.id.maleCat:
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerLoader,new MaleCategiresFragment()).commit();
+                getSupportActionBar().setTitle("Male Categiries");
+                break;
+            case R.id.femaleCat:
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerLoader,new FemaleCategiresFragment()).commit();
+                getSupportActionBar().setTitle("Female Categiries");
+                break;
+            case R.id.offers:
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerLoader,new OfferesFragment()).commit();
+                getSupportActionBar().setTitle("All Offeres");
+                break;
+            case R.id.contact:
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerLoader,new AddSupportFragment()).commit();
+                getSupportActionBar().setTitle("All Offeres");
+                break;
+            case R.id.addCategiry:
+                showAddItemDialog();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showAddItemDialog() {
+        ProgressDialog dialogss = new ProgressDialog(this);
+        dialogss.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialogss.setMessage("Uploading...");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View addLayout = LayoutInflater.from(getApplicationContext()).inflate(R.layout.add,null);
+        builder.setView(addLayout);
+        builder.setCancelable(false);
+        EditText title = addLayout.findViewById(R.id.categiryTitleAdd);
+        EditText price = addLayout.findViewById(R.id.categiryPriceAdd);
+        imgLoader = addLayout.findViewById(R.id.categiryImagesAdd);
+        Button selectImages = addLayout.findViewById(R.id.selectImg);
+        Button finish = addLayout.findViewById(R.id.uploadData);
+        RadioButton Male = addLayout.findViewById(R.id.forMale);
+        RadioButton Female = addLayout.findViewById(R.id.forFemale);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        selectImages.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectImageFromStorage();
+            }
+        });
+        finish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (filePath != null) {
+                    dialogss.show();
+                    StorageReference update = FirebaseStorage.getInstance().getReference("Images/" + UUID.randomUUID().toString());
+                    update.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            String catRef = "";
+                            if (Male.isChecked()){
+                                catRef = "Categories";
+                            }
+                            if (Female.isChecked()){
+                                catRef = "Female Services";
+                            }
+                            DatabaseReference addCatRef = FirebaseDatabase.getInstance().getReference().child(catRef).push();
+                            update.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    Category category = new Category();
+                                    category.setImgUrl(uri.toString());
+                                    category.setPostKey(addCatRef.getRef().getKey());
+                                    category.setPrice(price.getText().toString());
+                                    category.setTitle(title.getText().toString());
+                                    addCatRef.setValue(category).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                dialogss.dismiss();
+                                                Toast.makeText(MainActivity.this, "Categiry Added!", Toast.LENGTH_SHORT).show();
+                                                dialog.dismiss();
+                                            } else {
+                                                dialogss.dismiss();
+                                                Toast.makeText(MainActivity.this, "" + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            dialogss.dismiss();
+                            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                            double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                            dialogss.setMessage("adding" + (int)progress + "%");
+                        }
+                    });
+                }else {
+                    Toast.makeText(MainActivity.this, "Please Select Image", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+    private void selectImageFromStorage() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Image from here..."),PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ImageView offereImg_loader = findViewById(R.id.offereImagesAdd);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null){
+            filePath = data.getData();
+            Picasso.get().load(filePath).into(imgLoader);
+            imgLoader.setVisibility(View.VISIBLE);
+        }
+    }
+
+}
+This is AllUserListScreen:
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AllUsersFragment">
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/displayAllUsers"/>
+</LinearLayout>
+
+This is AllUserListScreen java file:
+package com.codewithsk.barberadmin;
+
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+
+public class AllUsersFragment extends Fragment {
+    private RecyclerView usersRecyclerView;
+    private ArrayList<User> userList;
+    public AllUsersFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View userLayout =  inflater.inflate(R.layout.fragment_all_users, container, false);
+            usersRecyclerView = userLayout.findViewById(R.id.displayAllUsers);
+            usersRecyclerView.setHasFixedSize(true);
+            usersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+            userList = new ArrayList<>();
+
+        FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        if (ds.exists()){
+                            User user = ds.getValue(User.class);
+                            userList.add(user);
+                        }else {
+                            Toast.makeText(getContext(), "Not any User Exists", Toast.LENGTH_SHORT).show();
+                        }
+                        UserAdapter adapter = new UserAdapter(getContext(),userList);
+                        usersRecyclerView.setAdapter(adapter);
+                    }
+                }else{
+                    Toast.makeText(getContext(), "No one can exist", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        return userLayout;
+    }
+}
+package com.codewithsk.barberadmin;
+
+public class User {
+    String name,mobile_no,age,pincode,gender,uid,databaseKey;
+
+    public User(){
+
+    }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getMobile_no() {
+        return mobile_no;
+    }
+
+    public void setMobile_no(String mobile_no) {
+        this.mobile_no = mobile_no;
+    }
+
+    public String getAge() {
+        return age;
+    }
+
+    public void setAge(String age) {
+        this.age = age;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public void setPincode(String pincode) {
+        this.pincode = pincode;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getDatabaseKey() {
+        return databaseKey;
+    }
+
+    public void setDatabaseKey(String databaseKey) {
+        this.databaseKey = databaseKey;
+    }
+}
+
+package com.codewithsk.barberadmin;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.ArrayList;
+
+public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> {
+    private Context context;
+    private ArrayList<User> userList;
+
+    public UserAdapter(Context ctx, ArrayList<User> userList){
+        this.context = ctx;
+        this.userList = userList;
+    }
+    @NonNull
+    @Override
+    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View rootUser = LayoutInflater.from(parent.getContext()).inflate(R.layout.all_user_list,parent,false);
+
+        return new UserViewHolder(rootUser);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
+        User user = userList.get(position);
+        holder.user_name.setText("name is: "+user.getName());
+        holder.user_phone.setText("Contact No is: "+user.getMobile_no());
+        holder.user_gender.setText("Gender is: "+user.getGender());
+        holder.user_uid.setText("Pincode is: "+user.getPincode());
+        holder.user_age.setText("Age is: "+user.getAge());
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                holder.igDelete.setVisibility(View.VISIBLE);
+                return true;
+            }
+        });
+
+        holder.igDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase.getInstance().getReference("Users").child(user.getUid())
+                        .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()){
+                            mDelet(position);
+                            Toast.makeText(context, "User Removed From database", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return userList.size();
+    }
+
+    public void mDelet(int i){
+        userList.remove(i);
+        notifyItemRemoved(i);
+    }
+}
+
+package com.codewithsk.barberadmin;
+
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+public class UserViewHolder extends RecyclerView.ViewHolder {
+    public TextView user_name,user_phone,user_age,user_gender,user_uid;
+    public ImageButton igDelete;
+    public UserViewHolder(@NonNull View itemView) {
+        super(itemView);
+
+        user_age = itemView.findViewById(R.id.userAge);
+        user_gender = itemView.findViewById(R.id.userGender);
+        user_name = itemView.findViewById(R.id.userName);
+        user_phone = itemView.findViewById(R.id.userPhone);
+        user_uid = itemView.findViewById(R.id.userUid);
+        igDelete = itemView.findViewById(R.id.userDelet);
+    }
+}
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_margin="10dp"
+    android:padding="5dp"
+    app:cardMaxElevation="8dp"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/userName"
+            android:text="Loading...."/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/userPhone"
+            android:text="Loading...."/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/userAge"
+            android:text="Loading...."/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/userGender"
+            android:gravity="center"
+            android:text="Loading...."/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/userUid"
+            android:text="Loading...."/>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:id="@+id/userDelet"
+            android:src="@drawable/ic_baseline_delete_24"
+            />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
+
+This is All appointment list file:
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/appTitle"
+            android:text="loading..."/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/appPrice"
+            android:text="loading..."/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/appNumber"
+            android:gravity="center"
+            android:text="loading..."/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/appDate"
+            android:text="loading..."/>
+
+        <TextView
+            android:id="@+id/appTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="loading..." />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accept Request"
+            android:id="@+id/accept"
+            />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reject Request"
+                android:id="@+id/reject"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="20dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_baseline_delete_24"
+                android:id="@+id/deleteAppt"
+                />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_baseline_call_24"
+                android:id="@+id/callUser"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AllAppointmentFragment">
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/recyclerView"/>
+</LinearLayout>
+This is All appointment java code:
+package com.codewithsk.barberadmin;
+
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+
+public class AllAppointmentFragment extends Fragment {
+    private RecyclerView recyclerViews;
+    private ArrayList<Appoinments> appList;
+
+    public AllAppointmentFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View root =  inflater.inflate(R.layout.fragment_all_appointment, container, false);
+        recyclerViews = root.findViewById(R.id.recyclerView);
+        recyclerViews.setHasFixedSize(true);
+        recyclerViews.setLayoutManager(new LinearLayoutManager(container.getContext()));
+        appList = new ArrayList<>();
+
+        FirebaseDatabase.getInstance().getReference("All Appointment").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    if (ds.exists()){
+                        Appoinments appoinments = ds.getValue(Appoinments.class);
+                        appList.add(appoinments);
+                    }
+                }
+                AllAppointmentAdapter allAppointmentAdapter = new AllAppointmentAdapter(container.getContext(),appList);
+                recyclerViews.setAdapter(allAppointmentAdapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(container.getContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        return root;
+    }
+}
+package com.codewithsk.barberadmin;
+
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+public class AllAppointmentViewHolder extends RecyclerView.ViewHolder {
+    TextView appointTitle,appointPrice,appointTime,appointDate,appointPhone;
+    Button acceptRequest,rejectRequest;
+    ImageButton delet,call;
+    public AllAppointmentViewHolder(@NonNull View itemView) {
+        super(itemView);
+        appointTitle = itemView.findViewById(R.id.appTitle);
+        appointPrice = itemView.findViewById(R.id.appPrice);
+        appointDate = itemView.findViewById(R.id.appDate);
+        appointTime = itemView.findViewById(R.id.appTime);
+        appointPhone = itemView.findViewById(R.id.appNumber);
+        acceptRequest = itemView.findViewById(R.id.accept);
+        rejectRequest = itemView.findViewById(R.id.reject);
+        delet = itemView.findViewById(R.id.deleteAppt);
+        call = itemView.findViewById(R.id.callUser);
+    }
+}
+
+package com.codewithsk.barberadmin;
+
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
+public class AllAppointmentAdapter extends RecyclerView.Adapter<AllAppointmentViewHolder> {
+    Context context;
+    ArrayList<Appoinments> appoinmentsList;
+
+    public AllAppointmentAdapter(Context context,ArrayList<Appoinments> appoinmentsList){
+        this.context = context;
+        this.appoinmentsList = appoinmentsList;
+    }
+    @NonNull
+    @Override
+    public AllAppointmentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View root = LayoutInflater.from(parent.getContext()).inflate(R.layout.appointment_list,parent,false);
+        return new AllAppointmentViewHolder(root);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull AllAppointmentViewHolder holder, int position) {
+        Appoinments appoinments = appoinmentsList.get(position);
+        holder.appointTitle.setText("Title is:"+appoinments.getTitle());
+        holder.appointPrice.setText("Price is:"+appoinments.getPrice());
+        holder.appointTime.setText("Time is:"+appoinments.getTime());
+        holder.appointDate.setText("Date is: "+appoinments.getDate());
+        holder.appointPhone.setText("Contact is: "+appoinments.getCustumerPhoneNo());
+        holder.acceptRequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase.getInstance().getReference("All Appointment").child(appoinments.AllRefKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String data = "Accepted";
+                        String  status = snapshot.getRef().child("status").setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()){
+                                    Toast.makeText(context, "request accepted!", Toast.LENGTH_SHORT).show();
+                                    holder.acceptRequest.setEnabled(false);
+                                    holder.rejectRequest.setEnabled(true);
+                                    holder.acceptRequest.setText("Accepted");
+                                    holder.rejectRequest.setText("reject request");
+                                }
+                            }
+                        }).toString();
+                        appoinments.setStatus(status);
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+                FirebaseDatabase.getInstance().getReference("Users").child(appoinments.getUid()).child("Appointments")
+                        .child(appoinments.getAppointmentDatabaseKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String data = "Accepted";
+                        String  status = snapshot.getRef().child("status").setValue(data).toString();
+                        appoinments.setStatus(status);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+        });
+        holder.rejectRequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase.getInstance().getReference("All Appointment").child(appoinments.AllRefKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String data = "Rejected";
+                        String  status = snapshot.getRef().child("status").setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                Toast.makeText(context, "request rejected!", Toast.LENGTH_SHORT).show();
+                                holder.acceptRequest.setEnabled(true);
+                                holder.rejectRequest.setEnabled(false);
+                                holder.rejectRequest.setText("rejected");
+                                holder.acceptRequest.setText("Accept request");
+                            }
+                        }).toString();
+                        appoinments.setStatus(status);
+                        if (snapshot.exists()){
+                            String stat = snapshot.getValue(Appoinments.class).getStatus();
+                            if (stat.equals("Rejected")){
+                                holder.rejectRequest.setText("rejected");
+                                holder.rejectRequest.setEnabled(false);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+                FirebaseDatabase.getInstance().getReference("Users").child(appoinments.getUid()).child("Appointments")
+                        .child(appoinments.getAppointmentDatabaseKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String data = "Rejected";
+                        String  status = snapshot.getRef().child("status").setValue(data).toString();
+                        appoinments.setStatus(status);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+        });
+        FirebaseDatabase.getInstance().getReference("All Appointment").child(appoinments.AllRefKey)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    String stat = snapshot.getValue(Appoinments.class).getStatus();
+                    if (stat.equals("Accepted")){
+                        holder.acceptRequest.setText("Accepted");
+                        holder.acceptRequest.setEnabled(false);
+                    }else if (stat.equals("Rejected")){
+                        holder.rejectRequest.setText("Accepted");
+                        holder.rejectRequest.setEnabled(false);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        holder.delet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase.getInstance().getReference("All Appointment")
+                        .child(appoinments.getAllRefKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        FirebaseDatabase.getInstance().getReference("Users").child(appoinments.getUid())
+                                .child("Appointments").child(appoinments.getAppointmentDatabaseKey())
+                                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()){
+                                    mDelet(position);
+                                    Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show();
+                                }else {
+                                    Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        holder.call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_CALL);
+                intent.setData(Uri.parse("tel:"+appoinments.getCustumerPhoneNo()));
+                context.startActivity(intent);
+            }
+        });
+    }
+
+
+
+    @Override
+    public int getItemCount() {
+        return appoinmentsList.size();
+    }
+
+    public void mDelet(int item){
+        appoinmentsList.remove(item);
+        notifyItemRemoved(item);
+    }
+}
+
+package com.codewithsk.barberadmin;
+
+public class Appoinments {
+
+    Appoinments(){
+
+    }
+    String title,date,time,price,appointmentDatabaseKey,uid,custumerPhoneNo,AllRefKey,status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public void setPrice(String price) {
+        this.price = price;
+    }
+
+    public String getAppointmentDatabaseKey() {
+        return appointmentDatabaseKey;
+    }
+
+    public void setAppointmentDatabaseKey(String appointmentDatabaseKey) {
+        this.appointmentDatabaseKey = appointmentDatabaseKey;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getCustumerPhoneNo() {
+        return custumerPhoneNo;
+    }
+
+    public void setCustumerPhoneNo(String custumerPhoneNo) {
+        this.custumerPhoneNo = custumerPhoneNo;
+    }
+
+    public String getAllRefKey() {
+        return AllRefKey;
+    }
+
+    public void setAllRefKey(String allRefKey) {
+        AllRefKey = allRefKey;
+    }
+}
+
+this is categireis screens
+first male catefiry screen:
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MaleCategiresFragment">
+
+  <androidx.recyclerview.widget.RecyclerView
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:id="@+id/maleRecyclerView"/>
+
+</FrameLayout>
+male categiry java code:
+package com.codewithsk.barberadmin;
+
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+
+public class MaleCategiresFragment extends Fragment {
+    private ArrayList<Category> catagoryList;
+    private RecyclerView recyclerViewMale;
+    private CategiryAdapter adapter;
+    public MaleCategiresFragment() {
+        // Required empty public constructor
+    }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View maleRoot =  inflater.inflate(R.layout.fragment_male_categires, container, false);
+        catagoryList = new ArrayList<>();
+        recyclerViewMale = maleRoot.findViewById(R.id.maleRecyclerView);
+        recyclerViewMale.setHasFixedSize(true);
+        recyclerViewMale.setLayoutManager(new LinearLayoutManager(container.getContext()));
+        FirebaseDatabase.getInstance().getReference("Categories").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    if (ds.exists()){
+                        Category category = ds.getValue(Category.class);
+                        catagoryList.add(category);
+                    }
+                }
+                adapter = new CategiryAdapter(container.getContext(),catagoryList);
+                recyclerViewMale.setAdapter(adapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        return maleRoot;
+    }
+}
+Female categiry Screen
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FemaleCategiresFragment">
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/femaleRecyclerView"/>
+</LinearLayout>
+Female categiry java
+package com.codewithsk.barberadmin;
+
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.Locale;
+
+public class FemaleCategiresFragment extends Fragment {
+
+    private ArrayList<Category> catagoryList;
+    private RecyclerView recyclerViewFemale;
+    private CategiryAdapter adapter;
+
+    public FemaleCategiresFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View femaleRoot =  inflater.inflate(R.layout.fragment_female_categires, container, false);
+        catagoryList = new ArrayList<>();
+        recyclerViewFemale = femaleRoot.findViewById(R.id.femaleRecyclerView);
+        recyclerViewFemale.setHasFixedSize(true);
+        recyclerViewFemale.setLayoutManager(new LinearLayoutManager(container.getContext()));
+        FirebaseDatabase.getInstance().getReference("Female Services").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()){
+                    if (ds.exists()){
+                        Category category = ds.getValue(Category.class);
+                        catagoryList.add(category);
+                    }
+                }
+                adapter = new CategiryAdapter(container.getContext(),catagoryList);
+                recyclerViewFemale.setAdapter(adapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        return femaleRoot;
+    }
+}
+This is add offere and display offere screen:
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".OfferesFragment">
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="add new Offers"
+        android:id="@+id/addOfferesShowLayout"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_below="@+id/addOfferesShowLayout"
+        android:layout_height="match_parent"
+        android:id="@+id/maleRecyclerView"/>
+</RelativeLayout>
+This is add offere and display offere screen java:
+package com.codewithsk.barberadmin;
+
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.UUID;
+
+import static android.app.Activity.RESULT_OK;
+
+public class OfferesFragment extends Fragment {
+    private Button forAddOffere;
+    private RecyclerView maleOffereRecyclerView,femaleOffereRecyclerView;
+    private ArrayList<Offere> offereArrayList;
+    private ImageView offereImg_loader;
+    private Uri filePath;
+    private final int PICK_IMAGE_REQUEST = 22;
+    public OfferesFragment() {
+        // Required empty public constructor
+    }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View offerRoot =  inflater.inflate(R.layout.fragment_offeres, container, false);
+            maleOffereRecyclerView = offerRoot.findViewById(R.id.maleRecyclerView);
+            forAddOffere = offerRoot.findViewById(R.id.addOfferesShowLayout);
+            offereArrayList = new ArrayList<>();
+            maleOffereRecyclerView.setHasFixedSize(true);
+            maleOffereRecyclerView.setLayoutManager(new LinearLayoutManager(container.getContext()));
+            FirebaseDatabase.getInstance().getReference("Male Offers").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        if (ds.exists()){
+                            Offere offere = ds.getValue(Offere.class);
+                            offereArrayList.add(offere);
+                        }
+                    }
+                    OfferAdapter adapter = new OfferAdapter(container.getContext(),offereArrayList);
+                    maleOffereRecyclerView.setAdapter(adapter);
+                }else{
+                    Toast.makeText(container.getContext(), "Not Any Offere Exits", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+            FirebaseDatabase.getInstance().getReference("Female Offeres").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        if (ds.exists()){
+                            Offere offere = ds.getValue(Offere.class);
+                            offereArrayList.add(offere);
+                        }
+                    }
+                    OfferAdapter adapter = new OfferAdapter(container.getContext(),offereArrayList);
+                    maleOffereRecyclerView.setAdapter(adapter);
+                }else{
+                    Toast.makeText(container.getContext(), "Not Any Offere Exits", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+            forAddOffere.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   View vee =  LayoutInflater.from(container.getContext()).inflate(R.layout.addoffere,container,false);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(container.getContext());
+                    builder.setCancelable(false);
+                    builder.setView(vee);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
+                    RadioButton maleOffere = vee.findViewById(R.id.offerforMale);
+                    RadioButton femaleOffer = vee.findViewById(R.id.offerforFemale);
+                    Button add_offere = vee.findViewById(R.id.addOfferebtn);
+                    Button select_img = vee.findViewById(R.id.offerselectImg);
+                    offereImg_loader = vee.findViewById(R.id.offereImagesAdd);
+
+                    ProgressDialog dialogss = new ProgressDialog(container.getContext());
+                    dialogss.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    dialogss.setMessage("Uploading...");
+
+                    add_offere.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialogss.show();
+                            StorageReference offerref = FirebaseStorage.getInstance().getReference("Offers/"+ UUID.randomUUID());
+                            if (filePath != null) {
+                                offerref.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                        offerref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                            @Override
+                                            public void onSuccess(Uri uri) {
+                                                String offereChaild = "";
+                                                if (maleOffere.isChecked()) {
+                                                    offereChaild = "Male Offers";
+                                                }
+                                                if (femaleOffer.isChecked()) {
+                                                    offereChaild = "Female Offeres";
+                                                }
+                                                Offere offere = new Offere();
+                                                DatabaseReference chaild = FirebaseDatabase.getInstance().getReference().child(offereChaild).push();
+                                                offere.setOffereImageUrl(uri.toString());
+                                                offere.setOfferKey(chaild.getRef().getKey());
+                                                chaild.setValue(offere).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            dialog.dismiss();
+                                                            dialogss.dismiss();
+                                                            Toast.makeText(container.getContext(), "Offere Successfully added", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(getContext(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                                dialogss.dismiss();
+                                            }
+                                        });
+                                    }
+                                })
+                                        .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                                            @Override
+                                            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                                                double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                                                dialogss.setMessage("adding" + (int) progress + "%");
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                dialog.dismiss();
+                                                dialogss.dismiss();
+                                                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }else {
+                                Toast.makeText(getContext(), "Please Select offere Photo!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                    select_img.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            selectImageFromStorage();
+                        }
+                    });
+                }
+            });
+
+        return offerRoot;
+    }
+
+    private void selectImageFromStorage() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Image from here..."),PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            filePath = data.getData();
+            Picasso.get().load(filePath).into(offereImg_loader);
+            offereImg_loader.setVisibility(View.VISIBLE);
+        }
+
+    }
+}
+package com.codewithsk.barberadmin;
+
+public class Offere {
+    String offereImageUrl,offerKey;
+
+    public Offere(){
+
+    }
+
+    public String getOffereImageUrl() {
+        return offereImageUrl;
+    }
+
+    public void setOffereImageUrl(String offereImageUrl) {
+        this.offereImageUrl = offereImageUrl;
+    }
+
+    public String getOfferKey() {
+        return offerKey;
+    }
+
+    public void setOfferKey(String offerKey) {
+        this.offerKey = offerKey;
+    }
+}
+
+This is Add and diplay ,update Shop info and send feedback screen:
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".OfferesFragment">
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="add new Offers"
+        android:id="@+id/addOfferesShowLayout"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_below="@+id/addOfferesShowLayout"
+        android:layout_height="match_parent"
+        android:id="@+id/maleRecyclerView"/>
+</RelativeLayout>
+This is Add and diplay ,update Shop info and send feedback screen java:
+package com.codewithsk.barberadmin;
+
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.UUID;
+
+import static android.app.Activity.RESULT_OK;
+
+public class OfferesFragment extends Fragment {
+    private Button forAddOffere;
+    private RecyclerView maleOffereRecyclerView,femaleOffereRecyclerView;
+    private ArrayList<Offere> offereArrayList;
+    private ImageView offereImg_loader;
+    private Uri filePath;
+    private final int PICK_IMAGE_REQUEST = 22;
+    public OfferesFragment() {
+        // Required empty public constructor
+    }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View offerRoot =  inflater.inflate(R.layout.fragment_offeres, container, false);
+            maleOffereRecyclerView = offerRoot.findViewById(R.id.maleRecyclerView);
+            forAddOffere = offerRoot.findViewById(R.id.addOfferesShowLayout);
+            offereArrayList = new ArrayList<>();
+            maleOffereRecyclerView.setHasFixedSize(true);
+            maleOffereRecyclerView.setLayoutManager(new LinearLayoutManager(container.getContext()));
+            FirebaseDatabase.getInstance().getReference("Male Offers").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        if (ds.exists()){
+                            Offere offere = ds.getValue(Offere.class);
+                            offereArrayList.add(offere);
+                        }
+                    }
+                    OfferAdapter adapter = new OfferAdapter(container.getContext(),offereArrayList);
+                    maleOffereRecyclerView.setAdapter(adapter);
+                }else{
+                    Toast.makeText(container.getContext(), "Not Any Offere Exits", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+            FirebaseDatabase.getInstance().getReference("Female Offeres").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()){
+                    for (DataSnapshot ds : snapshot.getChildren()){
+                        if (ds.exists()){
+                            Offere offere = ds.getValue(Offere.class);
+                            offereArrayList.add(offere);
+                        }
+                    }
+                    OfferAdapter adapter = new OfferAdapter(container.getContext(),offereArrayList);
+                    maleOffereRecyclerView.setAdapter(adapter);
+                }else{
+                    Toast.makeText(container.getContext(), "Not Any Offere Exits", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+            forAddOffere.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   View vee =  LayoutInflater.from(container.getContext()).inflate(R.layout.addoffere,container,false);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(container.getContext());
+                    builder.setCancelable(false);
+                    builder.setView(vee);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
+                    RadioButton maleOffere = vee.findViewById(R.id.offerforMale);
+                    RadioButton femaleOffer = vee.findViewById(R.id.offerforFemale);
+                    Button add_offere = vee.findViewById(R.id.addOfferebtn);
+                    Button select_img = vee.findViewById(R.id.offerselectImg);
+                    offereImg_loader = vee.findViewById(R.id.offereImagesAdd);
+
+                    ProgressDialog dialogss = new ProgressDialog(container.getContext());
+                    dialogss.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    dialogss.setMessage("Uploading...");
+
+                    add_offere.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialogss.show();
+                            StorageReference offerref = FirebaseStorage.getInstance().getReference("Offers/"+ UUID.randomUUID());
+                            if (filePath != null) {
+                                offerref.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                        offerref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                            @Override
+                                            public void onSuccess(Uri uri) {
+                                                String offereChaild = "";
+                                                if (maleOffere.isChecked()) {
+                                                    offereChaild = "Male Offers";
+                                                }
+                                                if (femaleOffer.isChecked()) {
+                                                    offereChaild = "Female Offeres";
+                                                }
+                                                Offere offere = new Offere();
+                                                DatabaseReference chaild = FirebaseDatabase.getInstance().getReference().child(offereChaild).push();
+                                                offere.setOffereImageUrl(uri.toString());
+                                                offere.setOfferKey(chaild.getRef().getKey());
+                                                chaild.setValue(offere).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            dialog.dismiss();
+                                                            dialogss.dismiss();
+                                                            Toast.makeText(container.getContext(), "Offere Successfully added", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(getContext(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                                dialogss.dismiss();
+                                            }
+                                        });
+                                    }
+                                })
+                                        .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                                            @Override
+                                            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                                                double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                                                dialogss.setMessage("adding" + (int) progress + "%");
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                dialog.dismiss();
+                                                dialogss.dismiss();
+                                                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }else {
+                                Toast.makeText(getContext(), "Please Select offere Photo!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                    select_img.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            selectImageFromStorage();
+                        }
+                    });
+                }
+            });
+
+        return offerRoot;
+    }
+
+    private void selectImageFromStorage() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Image from here..."),PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            filePath = data.getData();
+            Picasso.get().load(filePath).into(offereImg_loader);
+            offereImg_loader.setVisibility(View.VISIBLE);
+        }
+
+    }
+}
+
+
